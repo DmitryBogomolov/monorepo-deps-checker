@@ -7,5 +7,17 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Dmitry Bogomolov",
+  "bugs": {
+    "url": "https://github.com/DmitryBogomolov/monorepo-deps-checker/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DmitryBogomolov/monorepo-deps-checker.git"
+  },
+  "keywords": [
+    "monorepo",
+    "dependencies",
+    "version"
+  ],
   "license": "MIT"
 }
