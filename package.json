@@ -1,0 +1,11 @@
+{
+  "name": "monorepo-deps-checker",
+  "version": "0.0.1",
+  "description": "Checks dependencies in packages",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dmitry Bogomolov",
+  "license": "MIT"
+}
