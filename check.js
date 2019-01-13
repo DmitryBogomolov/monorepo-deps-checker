@@ -1,5 +1,5 @@
 const path = require('path');
-const loadProjects = require('./loader');
+const loadPackages = require('./loader');
 
 function getPackagesDir(repoDir, packagesDir) {
     return path.resolve(path.join(repoDir || '.', packagesDir || 'packages'));
@@ -13,22 +13,25 @@ function collectPackagesVersions(packages) {
     return versions;
 }
 
-function walkDeps(content, action) {
-    if (content.dependencies) {
-        action(content.name, 'dependencies', content.dependencies);
-    }
-    if (content.devDependencies) {
-        action(content.name, 'devDependencies', content.devDependencies);
-    }
-    if (content.peerDependencies) {
-        action(content.name, 'peerDependencies', content.peerDependencies);
-    }
+function processPackages(packages, action) {
+    packages.forEach(({ content }) => {
+        const packageName = content.name;
+        if (content.dependencies) {
+            action(packageName, 'dependencies', content.dependencies);
+        }
+        if (content.devDependencies) {
+            action(packageName, 'devDependencies', content.devDependencies);
+        }
+        if (content.peerDependencies) {
+            action(packageName, 'peerDependencies', content.peerDependencies);
+        }
+    });
 }
 
-function collectDependencies(modulesVersions, packageName, section, deps) {
-    Object.keys(deps).forEach((name) => {
-        const version = deps[name];
-        const moduleBag = (modulesVersions[name] = modulesVersions[name] || {});
+function collectPackageModules(modulesVersions, packageName, section, deps) {
+    Object.keys(deps).forEach((moduleName) => {
+        const version = deps[moduleName];
+        const moduleBag = (modulesVersions[moduleName] = modulesVersions[moduleName] || {});
         const versionBag = (moduleBag[version] = moduleBag[version] || []);
         versionBag.push({ package: packageName, section });
     });
@@ -36,38 +39,35 @@ function collectDependencies(modulesVersions, packageName, section, deps) {
 
 function collectModulesVersions(packages) {
     const modulesVersions = {};
-    const collect = (...args) => collectDependencies(modulesVersions, ...args);
-    packages.forEach(({ content }) => {
-        walkDeps(content, collect);
-    });
+    const collect = (...args) => collectPackageModules(modulesVersions, ...args);
+    processPackages(packages, collect);
     return modulesVersions;
 }
 
 function checkPackagesVersions(packagesVersions, packageName, section, deps) {
-    Object.keys(deps).forEach((name) => {
-        const targetVersion = packagesVersions[name];
-        if (targetVersion && targetVersion !== deps[name]) {
-            console.log(`PACKAGE VERSION MISMATCH: ${packageName}::${section} ${name}:${deps[name]}`);
+    Object.keys(deps).forEach((moduleName) => {
+        const targetVersion = packagesVersions[moduleName];
+        if (targetVersion && targetVersion !== deps[moduleName]) {
+            console.log(`PACKAGE VERSION MISMATCH: ${packageName}::${section} ${moduleName}:${deps[moduleName]}`);
         }
     });
 }
 
 function inspectPackagesVersions(packages, packagesVersions) {
     const check = (...args) => checkPackagesVersions(packagesVersions, ...args);
-    packages.forEach(({ content }) => {
-        walkDeps(content, check);
-    });
+    processPackages(packages, check);
 }
 
 function inspectModulesVersions(modulesVersions) {
     Object.keys(modulesVersions)
-        .filter(name => Object.keys(modulesVersions[name]).length > 1)
-        .forEach((name) => {
-            const versions = modulesVersions[name];
+        // Select those with at least two different versions.
+        .filter(moduleName => Object.keys(modulesVersions[moduleName]).length > 1)
+        .forEach((moduleName) => {
+            const versions = modulesVersions[moduleName];
             const list = Object.keys(versions)
-                .map(version => ({ version, items: versions[version]}));
+                .map(version => ({ version, items: versions[version] }));
             list.sort((a, b) => b.items.length - a.items.length)
-            console.log(`MODULE VERSIONS: ${name}`);
+            console.log(`MODULE VERSIONS: ${moduleName}`);
             list.forEach(({ version, items }) => {
                 console.log(`  ${version} (${items.length})`);
                 items.forEach(({ package, section }) => {
@@ -79,10 +79,10 @@ function inspectModulesVersions(modulesVersions) {
 
 async function check(repoDir, packagesDir) {
     const dir = getPackagesDir(repoDir, packagesDir);
-    const projects = await loadProjects(dir);
-    const packagesVersions = collectPackagesVersions(projects);
-    inspectPackagesVersions(projects, packagesVersions);
-    const modulesVersions = collectModulesVersions(projects);
+    const packages = await loadPackages(dir);
+    const packagesVersions = collectPackagesVersions(packages);
+    inspectPackagesVersions(packages, packagesVersions);
+    const modulesVersions = collectModulesVersions(packages);
     inspectModulesVersions(modulesVersions);
 }
 
