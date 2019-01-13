@@ -1,25 +1,8 @@
-const { promisify } = require('util');
 const path = require('path');
-const fs = require('fs');
+const loadProjects = require('./loader');
 
-const readdir = promisify(fs.readdir);
-const readFile = promisify(fs.readFile);
-
-async function loadProjects(workspace) {
-    const items = await readdir(workspace);
-    const projects = await Promise.all(items.map(async item => {
-        const pathToFile = path.join(workspace, item, 'package.json');
-        try {
-            const content = await readFile(pathToFile, 'utf8');
-            return { pathToFile, content: JSON.parse(content) };
-        } catch (err) {
-            if (err.code === 'ENOENT') {
-                return null;
-            }
-            throw err;
-        }
-    }));
-    return projects.filter(x => x);
+function getPackagesDir(repoDir, packagesDir) {
+    return path.resolve(path.join(repoDir || '.', packagesDir || 'packages'));
 }
 
 function collectPackagesVersions(packages) {
@@ -94,8 +77,9 @@ function inspectModulesVersions(modulesVersions) {
         });
 }
 
-async function check(workspace) {
-    const projects = await loadProjects(workspace);
+async function check(repoDir, packagesDir) {
+    const dir = getPackagesDir(repoDir, packagesDir);
+    const projects = await loadProjects(dir);
     const packagesVersions = collectPackagesVersions(projects);
     inspectPackagesVersions(projects, packagesVersions);
     const modulesVersions = collectModulesVersions(projects);
