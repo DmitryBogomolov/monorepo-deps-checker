@@ -1,8 +1,8 @@
 const path = require('path');
 const loadPackages = require('./loader');
 
-function getPackagesDir(repoDir, packagesDir) {
-    return path.resolve(path.join(repoDir || '.', packagesDir || 'packages'));
+function getPackagesDir(repoDir) {
+    return path.resolve(path.join(repoDir || '.', 'packages'));
 }
 
 function collectPackagesVersions(packages) {
@@ -44,18 +44,26 @@ function collectModulesVersions(packages) {
     return modulesVersions;
 }
 
-function checkPackagesVersions(packagesVersions, packageName, section, deps) {
+function checkPackagesVersions(packagesVersions, conflicts, packageName, section, deps) {
     Object.keys(deps).forEach((moduleName) => {
         const targetVersion = packagesVersions[moduleName];
         if (targetVersion && targetVersion !== deps[moduleName]) {
-            console.log(`PACKAGE VERSION MISMATCH: ${packageName}::${section} ${moduleName}:${deps[moduleName]}`);
+            conflicts.push({
+                packageName,
+                section,
+                moduleName,
+                currentVersion: deps[moduleName],
+                actualVersion: targetVersion,
+            });
         }
     });
 }
 
 function inspectPackagesVersions(packages, packagesVersions) {
-    const check = (...args) => checkPackagesVersions(packagesVersions, ...args);
+    const conflicts = [];
+    const check = (...args) => checkPackagesVersions(packagesVersions, conflicts, ...args);
     processPackages(packages, check);
+    return conflicts;
 }
 
 function inspectModulesVersions(modulesVersions) {
@@ -77,11 +85,12 @@ function inspectModulesVersions(modulesVersions) {
         });
 }
 
-async function check(repoDir, packagesDir) {
-    const dir = getPackagesDir(repoDir, packagesDir);
-    const packages = await loadPackages(dir);
+async function check(repoDir, resolvePackagesVersions) {
+    const packagesDir = getPackagesDir(repoDir);
+    const packages = await loadPackages(packagesDir);
     const packagesVersions = collectPackagesVersions(packages);
-    inspectPackagesVersions(packages, packagesVersions);
+    const packagesConflicts = inspectPackagesVersions(packages, packagesVersions);
+    resolvePackagesVersions(packagesConflicts);
     const modulesVersions = collectModulesVersions(packages);
     inspectModulesVersions(modulesVersions);
 }
