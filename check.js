@@ -33,7 +33,7 @@ function collectPackageModules(modulesVersions, packageName, section, deps) {
         const version = deps[moduleName];
         const moduleBag = (modulesVersions[moduleName] = modulesVersions[moduleName] || {});
         const versionBag = (moduleBag[version] = moduleBag[version] || []);
-        versionBag.push({ package: packageName, section });
+        versionBag.push({ packageName, section });
     });
 }
 
@@ -67,32 +67,31 @@ function inspectPackagesVersions(packages, packagesVersions) {
 }
 
 function inspectModulesVersions(modulesVersions) {
+    const conflicts = [];
     Object.keys(modulesVersions)
         // Select those with at least two different versions.
         .filter(moduleName => Object.keys(modulesVersions[moduleName]).length > 1)
         .forEach((moduleName) => {
             const versions = modulesVersions[moduleName];
-            const list = Object.keys(versions)
-                .map(version => ({ version, items: versions[version] }));
-            list.sort((a, b) => b.items.length - a.items.length)
-            console.log(`MODULE VERSIONS: ${moduleName}`);
-            list.forEach(({ version, items }) => {
-                console.log(`  ${version} (${items.length})`);
-                items.forEach(({ package, section }) => {
-                    console.log(`    ${package}::${section}`);
-                });
+            conflicts.push({
+                moduleName,
+                items: Object.keys(versions)
+                    .map(version => ({ version, packages: versions[version] }))
+                    .sort((a, b) => b.packages.length - a.packages.length)
             });
         });
+    return conflicts;
 }
 
-async function check(repoDir, resolvePackagesVersions) {
+async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const packagesDir = getPackagesDir(repoDir);
     const packages = await loadPackages(packagesDir);
     const packagesVersions = collectPackagesVersions(packages);
     const packagesConflicts = inspectPackagesVersions(packages, packagesVersions);
     resolvePackagesVersions(packagesConflicts);
     const modulesVersions = collectModulesVersions(packages);
-    inspectModulesVersions(modulesVersions);
+    const modulesConflicts = inspectModulesVersions(modulesVersions);
+    resolveModulesVersions(modulesConflicts);
 }
 
 module.exports = check;
