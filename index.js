@@ -2,21 +2,23 @@ const check = require('./check');
 
 function resolvePackagesConflicts(conflicts) {
     conflicts.forEach(({
-        packageName, section, moduleName, currentVersion, actualVersion/*, resolve*/
+        packageName, section, moduleName, currentVersion, actualVersion, resolve
     }) => {
         console.log(
             `PACKAGE VERSION MISMATCH: ${packageName}::${section} ${moduleName} ${currentVersion} (${actualVersion})`
         );
+        resolve();
     });
 }
 
 function resolveModulesConflicts(conflicts) {
-    conflicts.forEach(({ moduleName, items/*, resolve*/ }) => {
+    conflicts.forEach(({ moduleName, items, resolve }) => {
         console.log(`MODULE VERSIONS: ${moduleName}`);
         items.forEach(({ version, packages }) => {
             console.log(`  ${version} (${packages.length})`);
             packages.forEach(({ packageName, section }) => {
                 console.log(`    ${packageName}::${section}`);
+                resolve(0);
             });
         });
     });

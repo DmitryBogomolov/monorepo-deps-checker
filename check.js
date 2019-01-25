@@ -44,7 +44,7 @@ function collectModulesVersions(packages) {
     return modulesVersions;
 }
 
-function checkPackagesVersions(packagesVersions, conflicts, packageName, section, deps) {
+function checkPackagesVersions(packagesVersions, conflicts, changes, packageName, section, deps) {
     Object.keys(deps).forEach((moduleName) => {
         const targetVersion = packagesVersions[moduleName];
         if (targetVersion && targetVersion !== deps[moduleName]) {
@@ -54,44 +54,78 @@ function checkPackagesVersions(packagesVersions, conflicts, packageName, section
                 moduleName,
                 currentVersion: deps[moduleName],
                 actualVersion: targetVersion,
+                resolve: () => {
+                    changes.push({
+                        packageName,
+                        section,
+                        moduleName,
+                        version: targetVersion,
+                    });
+                },
             });
         }
     });
 }
 
-function inspectPackagesVersions(packages, packagesVersions) {
+function inspectPackagesVersions(packages, packagesVersions, changes) {
     const conflicts = [];
-    const check = (...args) => checkPackagesVersions(packagesVersions, conflicts, ...args);
+    const check = (...args) => checkPackagesVersions(packagesVersions, conflicts, changes, ...args);
     processPackages(packages, check);
     return conflicts;
 }
 
-function inspectModulesVersions(modulesVersions) {
+function inspectModulesVersions(modulesVersions, changes) {
     const conflicts = [];
     Object.keys(modulesVersions)
         // Select those with at least two different versions.
         .filter(moduleName => Object.keys(modulesVersions[moduleName]).length > 1)
         .forEach((moduleName) => {
             const versions = modulesVersions[moduleName];
+            const items = Object.keys(versions)
+                .map(version => ({ version, packages: versions[version] }))
+                .sort((a, b) => b.packages.length - a.packages.length);
             conflicts.push({
                 moduleName,
-                items: Object.keys(versions)
-                    .map(version => ({ version, packages: versions[version] }))
-                    .sort((a, b) => b.packages.length - a.packages.length)
+                items,
+                resolve: (choice) => {
+                    const index = choice >= 0 && choice < items.length ? Number(choice) : 0;
+                    const version = items[index].version;
+                    items.forEach(({ packages }, i) => {
+                        if (i === index) {
+                            return;
+                        }
+                        packages.forEach(({ packageName, section }) => {
+                            changes.push({
+                                packageName,
+                                section,
+                                moduleName,
+                                version,
+                            });
+                        });
+                    });
+                },
             });
         });
     return conflicts;
+}
+
+function applyChanges(packages, changes) {
+
 }
 
 async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const packagesDir = getPackagesDir(repoDir);
     const packages = await loadPackages(packagesDir);
     const packagesVersions = collectPackagesVersions(packages);
-    const packagesConflicts = inspectPackagesVersions(packages, packagesVersions);
+    const changes = [];
+    const packagesConflicts = inspectPackagesVersions(packages, packagesVersions, changes);
     resolvePackagesVersions(packagesConflicts);
     const modulesVersions = collectModulesVersions(packages);
-    const modulesConflicts = inspectModulesVersions(modulesVersions);
+    const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
     resolveModulesVersions(modulesConflicts);
+    console.log('CHECK');
+    console.log(changes);
+    applyChanges(packages, changes);
 }
 
 module.exports = check;
