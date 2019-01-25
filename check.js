@@ -110,7 +110,16 @@ function inspectModulesVersions(modulesVersions, changes) {
 }
 
 function applyChanges(packages, changes) {
-
+    const cache = {};
+    packages.forEach(({ content }) => {
+        cache[content.name] = content;
+    });
+    const packageNames = new Set();
+    changes.forEach(({ packageName, section, moduleName, version }) => {
+        packageNames.add(packageName);
+        cache[packageName][section][moduleName] = version;
+    });
+    return packages.filter(({ content }) => packageNames.has(content.name));
 }
 
 async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
@@ -123,9 +132,7 @@ async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const modulesVersions = collectModulesVersions(packages);
     const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
     resolveModulesVersions(modulesConflicts);
-    console.log('CHECK');
-    console.log(changes);
-    applyChanges(packages, changes);
+    const changedPackages = applyChanges(packages, changes);
 }
 
 module.exports = check;
