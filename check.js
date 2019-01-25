@@ -1,5 +1,5 @@
 const path = require('path');
-const loadPackages = require('./loader');
+const { loadPackages, savePackages } = require('./loader');
 
 function getPackagesDir(repoDir) {
     return path.resolve(path.join(repoDir || '.', 'packages'));
@@ -133,6 +133,7 @@ async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
     resolveModulesVersions(modulesConflicts);
     const changedPackages = applyChanges(packages, changes);
+    await savePackages(changedPackages);
 }
 
 module.exports = check;

@@ -4,6 +4,7 @@ const fs = require('fs');
 
 const readdir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
+const writeFile = promisify(fs.writeFile);
 
 async function getDirItems(dir) {
     try {
@@ -43,4 +44,23 @@ async function loadPackages(dir) {
     return packages;
 }
 
-module.exports = loadPackages;
+async function savePackage({ pathToFile, content }, errors) {
+    try {
+        await writeFile(pathToFile, JSON.stringify(content, null, 2) + '\n', 'utf8');
+    } catch (err) {
+        errors.push(err);
+    }
+}
+
+async function savePackages(packages) {
+    const errors = [];
+    await Promise.all(packages.map(pack => savePackage(pack, errors)));
+    if (errors.length) {
+        const err = new Error('some packages are not saved');
+        err.errors = errors;
+        throw err;
+    }
+}
+
+exports.loadPackages = loadPackages;
+exports.savePackages = savePackages;
