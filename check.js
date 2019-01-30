@@ -52,8 +52,8 @@ function checkPackagesVersions(packagesVersions, conflicts, changes, packageName
                 packageName,
                 section,
                 moduleName,
-                currentVersion: deps[moduleName],
-                actualVersion: targetVersion,
+                version: deps[moduleName],
+                targetVersion,
                 resolve: () => {
                     changes.push({
                         packageName,
@@ -76,6 +76,7 @@ function inspectPackagesVersions(packages, packagesVersions, changes) {
 
 function inspectModulesVersions(modulesVersions, changes) {
     const conflicts = [];
+    const defaultFilter = () => true;
     Object.keys(modulesVersions)
         // Select those with at least two different versions.
         .filter(moduleName => Object.keys(modulesVersions[moduleName]).length > 1)
@@ -87,20 +88,29 @@ function inspectModulesVersions(modulesVersions, changes) {
             conflicts.push({
                 moduleName,
                 items,
-                resolve: (choice) => {
+                resolve: (choice, filter = defaultFilterpa) => {
                     const index = choice >= 0 && choice < items.length ? Number(choice) : 0;
-                    const version = items[index].version;
-                    items.forEach(({ packages }, i) => {
-                        if (i === index) {
+                    const targetVersion = items[index].version;
+                    items.forEach(({ packages, version }) => {
+                        if (targetVersion === version) {
                             return;
                         }
                         packages.forEach(({ packageName, section }) => {
-                            changes.push({
+                            const isChanged = filter({
                                 packageName,
                                 section,
                                 moduleName,
                                 version,
+                                targetVersion,
                             });
+                            if (isChanged) {
+                                changes.push({
+                                    packageName,
+                                    section,
+                                    moduleName,
+                                    version: targetVersion,
+                                });
+                            }
                         });
                     });
                 },

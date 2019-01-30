@@ -18,7 +18,9 @@ function resolveModulesConflicts(conflicts) {
             console.log(`  ${version} (${packages.length})`);
             packages.forEach(({ packageName, section }) => {
                 console.log(`    ${packageName}::${section}`);
-                resolve(0);
+                resolve(0, ({ packageName, section, moduleName }) => {
+                    return false;
+                });
             });
         });
     });
