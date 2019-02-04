@@ -7,14 +7,14 @@ function getPackagesDir(repoDir) {
 
 function collectPackagesVersions(packages) {
     const versions = {};
-    packages.forEach(({ content }) => {
+    packages.forEach((content) => {
         versions[content.name] = content.version;
     });
     return versions;
 }
 
 function processPackages(packages, action) {
-    packages.forEach(({ content }) => {
+    packages.forEach((content) => {
         const packageName = content.name;
         if (content.dependencies) {
             action(packageName, 'dependencies', content.dependencies);
@@ -121,7 +121,7 @@ function inspectModulesVersions(modulesVersions, changes) {
 
 function applyChanges(packages, changes) {
     const cache = {};
-    packages.forEach(({ content }) => {
+    packages.forEach((content) => {
         cache[content.name] = content;
     });
     const packageNames = new Set();
@@ -129,12 +129,13 @@ function applyChanges(packages, changes) {
         packageNames.add(packageName);
         cache[packageName][section][moduleName] = version;
     });
-    return packages.filter(({ content }) => packageNames.has(content.name));
+    return packages.filter((content) => packageNames.has(content.name));
 }
 
 async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const packagesDir = getPackagesDir(repoDir);
-    const packages = await loadPackages(packagesDir);
+    const packageToFile = {};
+    const packages = await loadPackages(packagesDir, packageToFile);
     const packagesVersions = collectPackagesVersions(packages);
     const changes = [];
     const packagesConflicts = inspectPackagesVersions(packages, packagesVersions, changes);
@@ -143,7 +144,7 @@ async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
     resolveModulesVersions(modulesConflicts);
     const changedPackages = applyChanges(packages, changes);
-    await savePackages(changedPackages);
+    await savePackages(changedPackages, packageToFile);
 }
 
 module.exports = check;
