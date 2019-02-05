@@ -132,19 +132,20 @@ function applyChanges(packages, changes) {
     return packages.filter((content) => packageNames.has(content.name));
 }
 
-async function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
+function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const packagesDir = getPackagesDir(repoDir);
     const packageToFile = {};
-    const packages = await loadPackages(packagesDir, packageToFile);
-    const packagesVersions = collectPackagesVersions(packages);
-    const changes = [];
-    const packagesConflicts = inspectPackagesVersions(packages, packagesVersions, changes);
-    resolvePackagesVersions(packagesConflicts);
-    const modulesVersions = collectModulesVersions(packages);
-    const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
-    resolveModulesVersions(modulesConflicts);
-    const changedPackages = applyChanges(packages, changes);
-    await savePackages(changedPackages, packageToFile);
+    return loadPackages(packagesDir, packageToFile).then((packages) => {
+        const packagesVersions = collectPackagesVersions(packages);
+        const changes = [];
+        const packagesConflicts = inspectPackagesVersions(packages, packagesVersions, changes);
+        resolvePackagesVersions(packagesConflicts);
+        const modulesVersions = collectModulesVersions(packages);
+        const modulesConflicts = inspectModulesVersions(modulesVersions, changes);
+        resolveModulesVersions(modulesConflicts);
+        const changedPackages = applyChanges(packages, changes);
+        return savePackages(changedPackages, packageToFile);
+    });
 }
 
 module.exports = check;
