@@ -6,65 +6,66 @@ const readdir = promisify(fs.readdir);
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
 
-async function getDirItems(dir) {
-    try {
-        const items = await readdir(dir);
-        return items;
-    } catch (err) {
+function getDirItems(dir) {
+    return readdir(dir).catch((err) => {
         if (err.code === 'ENOENT') {
             throw new Error(`directory '${dir}' does not exist`);
         }
         throw err;
-    }
+    });
 }
 
-async function processPackage(dir, name, packages, packageToFile, errors) {
+function processPackage(dir, name, packages, packageToFile, errors) {
     const pathToFile = path.join(dir, name, 'package.json');
-    try {
-        const content = await readFile(pathToFile, 'utf8');
-        const pack = JSON.parse(content);
-        packages.push(pack);
-        packageToFile[pack.name] = pathToFile;
-    } catch (err) {
-        if (err.code !== 'ENOENT') {
-            errors.push(err);
+    return readFile(pathToFile, 'utf8').then(
+        (content) => {
+            const pack = JSON.parse(content);
+            packages.push(pack);
+            packageToFile[pack.name] = pathToFile;
+        },
+        (err) => {
+            if (err.code !== 'ENOENT') {
+                errors.push(err);
+            }
         }
-    }
+    );
 }
 
-async function loadPackages(dir, packageToFile) {
-    const items = await getDirItems(dir);
+function loadPackages(dir, packageToFile) {
     const packages = [];
     const errors = [];
-    await Promise.all(
-        items.map(item => processPackage(dir, item, packages, packageToFile, errors))
-    );
-    if (errors.length) {
-        const err = new Error('some packages are not processed');
-        err.errors = errors;
-        throw err;
-    }
-    return packages;
+    return getDirItems(dir)
+        .then((items) => Promise.all(
+            items.map(item => processPackage(dir, item, packages, packageToFile, errors))
+        ))
+        .then(() => {
+            if (errors.length) {
+                const err = new Error('some packages are not processed');
+                err.errors = errors;
+                throw err;
+            }
+            return packages;
+        });
 }
 
-async function savePackage(pack, packageToFile, errors) {
-    try {
-        await writeFile(packageToFile[pack.name], JSON.stringify(pack, null, 2) + '\n', 'utf8');
-    } catch (err) {
+function savePackage(pack, packageToFile, errors) {
+    const content = JSON.stringify(pack, null, 2) + '\n';
+    return writeFile(packageToFile[pack.name], content, 'utf8').catch((err) => {
         errors.push(err);
-    }
+    });
 }
 
-async function savePackages(packages, packageToFile) {
+function savePackages(packages, packageToFile) {
     const errors = [];
-    await Promise.all(
+    return Promise.all(
         packages.map(pack => savePackage(pack, packageToFile, errors))
-    );
-    if (errors.length) {
-        const err = new Error('some packages are not saved');
-        err.errors = errors;
-        throw err;
-    }
+    ).then(() => {
+        if (errors.length) {
+            const err = new Error('some packages are not saved');
+            err.errors = errors;
+            throw err;
+        }
+    });
 }
 
 exports.loadPackages = loadPackages;
