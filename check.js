@@ -88,7 +88,7 @@ function inspectModulesVersions(modulesVersions, changes) {
             conflicts.push({
                 moduleName,
                 items,
-                resolve: (choice, filter = defaultFilterpa) => {
+                resolve: (choice, filter = defaultFilter) => {
                     const index = choice >= 0 && choice < items.length ? Number(choice) : 0;
                     const targetVersion = items[index].version;
                     items.forEach(({ packages, version }) => {

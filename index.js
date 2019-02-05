@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 const check = require('./check');
 
 function resolvePackagesConflicts(conflicts) {
