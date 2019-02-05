@@ -4,7 +4,7 @@
   "description": "Checks dependencies in packages",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "lint": "eslint ."
   },
   "author": "Dmitry Bogomolov",
@@ -25,6 +25,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "eslint": "^5.13.0"
+    "eslint": "^5.13.0",
+    "jest": "^24.1.0"
   }
 }
