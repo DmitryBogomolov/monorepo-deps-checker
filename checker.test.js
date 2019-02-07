@@ -12,9 +12,9 @@ jest.mock('./loader', () => ({
 jest.mock('./packages-checker', () => inspectPackagesVersions);
 jest.mock('./modules-checker', () => inspectModulesVersions);
 
-const check = require('./check');
+const check = require('./checker');
 
-describe('check', () => {
+describe('checker', () => {
     let packages;
 
     afterEach(jest.resetAllMocks);
