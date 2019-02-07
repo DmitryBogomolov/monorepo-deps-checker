@@ -1,4 +1,6 @@
-const check = require('./check');
+/* eslint-disable */
+
+const check = require('./checker');
 
 function resolvePackagesConflicts(conflicts) {
     conflicts.forEach(({

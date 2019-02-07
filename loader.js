@@ -17,33 +17,34 @@ function getDirItems(dir) {
 
 function processPackage(dir, name, packages, packageToFile, errors) {
     const pathToFile = path.join(dir, name, 'package.json');
-    return readFile(pathToFile, 'utf8').then(
-        (content) => {
+    return readFile(pathToFile, 'utf8')
+        .then((content) => {
             const pack = JSON.parse(content);
             packages.push(pack);
             packageToFile[pack.name] = pathToFile;
-        },
-        (err) => {
+        })
+        .catch((err) => {
             if (err.code !== 'ENOENT') {
                 errors.push(err);
             }
-        }
-    );
+        });
 }
 
 function loadPackages(dir, packageToFile) {
     const packages = [];
+    const map = {};
     const errors = [];
     return getDirItems(dir)
         .then((items) => Promise.all(
-            items.map(item => processPackage(dir, item, packages, packageToFile, errors))
+            items.map(item => processPackage(dir, item, packages, map, errors))
         ))
         .then(() => {
             if (errors.length) {
-                const err = new Error('some packages are not processed');
+                const err = new Error('some packages are not loaded');
                 err.errors = errors;
                 throw err;
             }
+            Object.assign(packageToFile, map);
             return packages;
         });
 }
