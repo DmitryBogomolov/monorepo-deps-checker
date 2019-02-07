@@ -20,7 +20,7 @@ describe('loader', () => {
             readFile.mockReset();
         });
 
-        it('should handle non existing directory', () => {
+        it('handle non existing directory', () => {
             const err = new Error('test');
             err.code = 'ENOENT';
             readdir.mockRejectedValue(err);
@@ -34,7 +34,7 @@ describe('loader', () => {
                 });
         });
 
-        it('should load packages', () => {
+        it('load packages', () => {
             readdir.mockResolvedValue(['item1', 'item2', 'item3', 'item4']);
             readFile.mockResolvedValueOnce('{ "name": "a", "item1": 1 }');
             readFile.mockResolvedValueOnce('{ "name": "b", "item2": 2 }');
@@ -63,7 +63,7 @@ describe('loader', () => {
             });
         });
 
-        it('should handle errors', () => {
+        it('handle errors', () => {
             readdir.mockResolvedValue(['item1', 'item2', 'item3', 'item4']);
             readFile.mockRejectedValueOnce({ err: 'error1' });
             readFile.mockRejectedValueOnce({ code: 'ENOENT' });
@@ -89,7 +89,7 @@ describe('loader', () => {
             writeFile.mockReset();
         });
 
-        it('should save packages', () => {
+        it('save packages', () => {
             writeFile.mockResolvedValue();
             const packages = [
                 { name: 'a', item1: 1 },
@@ -111,7 +111,7 @@ describe('loader', () => {
             });
         });
 
-        it('should handle errors', () => {
+        it('handle errors', () => {
             writeFile.mockRejectedValueOnce({ err: 'error1' });
             writeFile.mockResolvedValueOnce();
             writeFile.mockRejectedValueOnce({ err: 'error3' });
