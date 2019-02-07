@@ -1,1 +1,1 @@
-module.exports = require('./checker');
+module.exports = require('./src/checker');
