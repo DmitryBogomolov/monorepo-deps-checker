@@ -21,7 +21,7 @@ await check('path-to-project', resolvePackagesConflicts, resolveModulesConflicts
 
 function resolvePackagesConflicts(conflicts) {
     conflicts.forEach(({
-        packageName, section, moduleName, currentVersion, actualVersion, resolve,
+        packageName, section, moduleName, version, targetVersion, resolve,
     }) => {
         resolve();
     });
@@ -48,4 +48,10 @@ function resolveModulesConflicts(conflicts) {
         resolve(choice, filter);
     });
 }
+```
+
+Example
+
+```bash
+node ./examples/simple.js <path-to-project>
 ```
