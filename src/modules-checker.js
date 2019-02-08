@@ -59,7 +59,7 @@ function inspectModulesVersions(packages, changes, resolve) {
                 },
             });
         });
-    resolve(conflicts);
+    return resolve(conflicts);
 }
 
 module.exports = inspectModulesVersions;

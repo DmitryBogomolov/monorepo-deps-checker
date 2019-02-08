@@ -7,6 +7,14 @@ function getPackagesDir(repoDir) {
     return path.resolve(path.join(repoDir || '.', 'packages'));
 }
 
+function inspect(inspectors, packages) {
+    const changes = [];
+    return inspectors.reduce(
+        (acc, { inspect, resolve }) => acc.then(() => inspect(packages, changes, resolve)),
+        Promise.resolve()
+    ).then(() => changes);
+}
+
 function applyChanges(packages, changes) {
     const cache = {};
     packages.forEach((content) => {
@@ -24,15 +32,16 @@ function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     const packagesDir = getPackagesDir(repoDir);
     const packageToFile = {};
     return loadPackages(packagesDir, packageToFile).then((packages) => {
-        const changes = [];
+        const inspectors = [];
         if (resolvePackagesVersions) {
-            inspectPackagesVersions(packages, changes, resolvePackagesVersions);
+            inspectors.push({ inspect: inspectPackagesVersions, resolve: resolvePackagesVersions });
         }
         if (resolveModulesVersions) {
-            inspectModulesVersions(packages, changes, resolveModulesVersions);
+            inspectors.push({ inspect: inspectModulesVersions, resolve: resolveModulesVersions });
         }
-        const changedPackages = applyChanges(packages, changes);
-        return savePackages(changedPackages, packageToFile);
+        return inspect(inspectors, packages)
+            .then(changes => applyChanges(packages, changes))
+            .then(changedPackages => savePackages(changedPackages, packageToFile));
     });
 }
 

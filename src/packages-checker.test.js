@@ -30,7 +30,7 @@ describe('packages checker', () => {
                     'p2': 'v2',
                     'p3': 'v3',
                 },
-            }
+            },
         ];
         const changes = [];
         const mock = jest.fn();
@@ -117,5 +117,17 @@ describe('packages checker', () => {
                 version: 'v1',
             },
         ]);
+    });
+
+    it('resolve async', () => {
+        const mock = () => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve('test-result');
+            }, 25);
+        });
+
+        return inspect([], [], mock).then((ret) => {
+            expect(ret).toEqual('test-result');
+        });
     });
 });
