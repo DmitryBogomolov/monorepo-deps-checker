@@ -1,6 +1,6 @@
 {
     "env": {
-        "browser": true,
+        "node": true,
         "commonjs": true,
         "es6": true,
         "jest": true
@@ -25,6 +25,10 @@
         "semi": [
             "error",
             "always"
+        ],
+        "comma-dangle": [
+            "error",
+            "always-multiline"
         ]
     }
 }

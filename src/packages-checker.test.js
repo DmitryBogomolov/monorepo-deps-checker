@@ -30,7 +30,7 @@ describe('packages checker', () => {
                     'p2': 'v2',
                     'p3': 'v3',
                 },
-            }
+            },
         ];
         const changes = [];
         const mock = jest.fn();
