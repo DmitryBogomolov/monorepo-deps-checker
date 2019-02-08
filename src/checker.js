@@ -11,7 +11,7 @@ function inspect(inspectors, packages) {
     const changes = [];
     return inspectors.reduce(
         (acc, { inspect, resolve }) => acc.then(() => inspect(packages, changes, resolve)),
-        Promise.resolve(),
+        Promise.resolve()
     ).then(() => changes);
 }
 
