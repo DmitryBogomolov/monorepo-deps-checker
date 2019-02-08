@@ -50,8 +50,30 @@ function resolveModulesConflicts(conflicts) {
 }
 ```
 
+Async
+
+```javascript
+function resolvePackagesConflicts(conflicts) {
+    await Promise.all(conflicts.map(async (conflict) => {
+        // ...
+        resolve();
+    }));
+}
+
+function resolveModulesConflicts(conflicts) {
+    await Promise.all(conflicts.map(async (conflict) => {
+        // ...
+        resolve(choice, filter);
+    }));
+}
+```
+
 Example
 
 ```bash
 node ./examples/simple.js <path-to-project>
+```
+
+```bash
+node ./examples/interactive.js <path-to-project>
 ```
