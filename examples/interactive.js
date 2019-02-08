@@ -9,49 +9,52 @@ const rl = readline.createInterface({
     prompt: '>> ',
 });
 
+function ask(question) {
+    return new Promise((resolve) => {
+        rl.question(question, resolve);
+        rl.prompt();
+    });
+}
+
+function walk(list, callback) {
+    return list.reduce((acc, item) => acc.then(() => callback(item)), Promise.resolve());
+}
+
 function resolvePackagesConflicts(conflicts) {
     rl.write('PACKAGE VERSION MISMATCHES\n');
-    return conflicts.reduce((acc, {
-        packageName, section, moduleName, version, targetVersion, resolve: resolveConflict,
+    return walk(conflicts, ({
+        packageName, section, moduleName, version, targetVersion, resolve,
     }) => {
-        return acc.then(() => new Promise((resolve) => {
-            const msg = `* ${packageName}::${section} ${moduleName} ${version} -> ${targetVersion} (y/n) `;
-            rl.question(msg, (answer) => {
-                if (answer.trim().toLowerCase() === 'y') {
-                    rl.write(' + resolved\n');
-                    resolveConflict();
-                }
+        const msg = `* ${packageName}::${section} ${moduleName} ${version} -> ${targetVersion} (y/n) `;
+        return ask(msg).then((answer) => {
+            if (answer.trim().toLowerCase() === 'y') {
+                rl.write(' + resolved\n');
                 resolve();
-            });
-            rl.prompt();
-        }));
-    }, Promise.resolve());
+            }
+        });
+    });
 }
 
 function resolveModulesConflicts(conflicts) {
     rl.write('MODULE VERSION MISMATCHES\n');
-    return conflicts.reduce((acc, {
-        moduleName, items, resolve: resolveConflict,
+    return walk(conflicts, ({
+        moduleName, items, resolve,
     }) => {
-        return acc.then(() => new Promise((resolve) => {
-            rl.write(`* ${moduleName}\n`);
-            items.forEach(({ version, packages }, i) => {
-                rl.write(`  ${i + 1}: ${version} (${packages.length})\n`);
-                packages.forEach(({ packageName, section }) => {
-                    rl.write(`    ${packageName}::${section}\n`);
-                });
+        rl.write(`* ${moduleName}\n`);
+        items.forEach(({ version, packages }, i) => {
+            rl.write(`  ${i + 1}: ${version} (${packages.length})\n`);
+            packages.forEach(({ packageName, section }) => {
+                rl.write(`    ${packageName}::${section}\n`);
             });
-            rl.question(`  (1..${items.length}) `, (answer) => {
-                const choice = Number(answer) - 1;
-                if (choice >= 0) {
-                    rl.write(' + resolved\n');
-                    resolveConflict(choice);
-                }
-                resolve();
-            });
-            rl.prompt();
-        }));
-    }, Promise.resolve());
+        });
+        return ask(`  (1..${items.length}) `).then((answer) => {
+            const choice = Number(answer) - 1;
+            if (choice >= 0) {
+                rl.write(' + resolved\n');
+                resolve(choice);
+            }
+        });
+    });
 }
 
 const repoDir = process.argv[2];
