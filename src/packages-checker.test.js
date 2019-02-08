@@ -118,4 +118,16 @@ describe('packages checker', () => {
             },
         ]);
     });
+
+    it('resolve async', () => {
+        const mock = () => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve('test-result');
+            }, 25);
+        });
+
+        return inspect([], [], mock).then((ret) => {
+            expect(ret).toEqual('test-result');
+        });
+    });
 });

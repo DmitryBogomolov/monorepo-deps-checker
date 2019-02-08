@@ -106,9 +106,28 @@ describe('checker', () => {
         });
     });
 
-    it('task current directory', () => {
+    it('take current directory', () => {
         return check(null, 'resolve-packages', 'resolve-modules').then(() => {
             expect(loadPackages).toBeCalledWith(path.resolve('packages'), {});
         });
+    });
+
+    it('allow async resolvers', () => {
+        inspectPackagesVersions.mockImplementation(() => new Promise((resolve) => {
+            expect(inspectModulesVersions).not.toBeCalled;
+            setTimeout(() => {
+                expect(inspectModulesVersions).not.toBeCalled;
+                resolve();
+            }, 40);
+        }));
+        inspectModulesVersions.mockImplementation(() => new Promise((resolve) => {
+            expect(savePackages).not.toBeCalled;
+            setTimeout(() => {
+                expect(savePackages).not.toBeCalled;
+                resolve();
+            }, 30);
+        }));
+
+        return check('test-dir', 'resolve-packages', 'resolve-modules');
     });
 });

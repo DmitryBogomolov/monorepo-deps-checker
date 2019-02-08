@@ -36,7 +36,7 @@ function inspectPackagesVersions(packages, changes, resolve) {
     const conflicts = [];
     const check = (...args) => checkPackagesVersions(packagesVersions, conflicts, changes, ...args);
     processPackages(packages, check);
-    resolve(conflicts);
+    return resolve(conflicts);
 }
 
 module.exports = inspectPackagesVersions;
