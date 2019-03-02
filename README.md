@@ -35,7 +35,7 @@ function resolveModulesConflicts(conflicts) {
             version, packages,
         }) => {
             packages.forEach(({
-                packageName, version,
+                packageName, section,
             }) => {
 
             });
