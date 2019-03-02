@@ -1,6 +1,6 @@
 {
   "name": "monorepo-deps-checker",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Checks dependencies in packages",
   "main": "index.js",
   "scripts": {
