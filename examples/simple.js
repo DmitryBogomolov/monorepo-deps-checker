@@ -24,7 +24,7 @@ function resolveModulesConflicts(conflicts) {
                 console.log(`    ${packageName}::${section}`);
             });
         });
-        // resolve(0, (/*{ packageName, section, moduleName }*/) => true);
+        // resolve(0, (/*{ packageName, section, moduleName, version, targetVersion }*/) => true);
     });
 }
 
