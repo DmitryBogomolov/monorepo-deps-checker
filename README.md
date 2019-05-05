@@ -41,7 +41,7 @@ function resolveModulesConflicts(conflicts) {
             });
         });
 
-        const choice = Math.round(Math.random() * (items.length - 1) - 0.5);
+        const choice = Math.round(Math.random() * items.length - 0.5);
         function filter({ packageName, section, moduleName }) {
             return true;
         }
@@ -70,10 +70,12 @@ function resolveModulesConflicts(conflicts) {
 
 Example
 
-```bash
-node ./examples/simple.js <path-to-project>
-```
+- [simple](./examples/simple.js)
+  ```bash
+  node ./examples/simple.js <path-to-project>
+  ```
 
-```bash
-node ./examples/interactive.js <path-to-project>
-```
+- [interactive](./examples/interactive.js)
+  ```bash
+  node ./examples/interactive.js <path-to-project>
+  ```
