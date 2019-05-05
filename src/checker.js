@@ -9,10 +9,14 @@ function getPackagesDir(repoDir) {
 
 function inspect(inspectors, packages) {
     const changes = [];
-    return inspectors.reduce(
-        (acc, { inspect, resolve }) => acc.then(() => inspect(packages, changes, resolve)),
-        Promise.resolve()
-    ).then(() => changes);
+    return inspectors
+        .reduce(
+            (acc, { inspect, resolve }) => acc.then(() =>
+                inspect(packages, changes, resolve)
+            ),
+            Promise.resolve()
+        )
+        .then(() => changes);
 }
 
 function applyChanges(packages, changes) {
@@ -25,7 +29,9 @@ function applyChanges(packages, changes) {
         packageNames.add(packageName);
         cache[packageName][section][moduleName] = version;
     });
-    return packages.filter((content) => packageNames.has(content.name));
+    return packages.filter(
+        (content) => packageNames.has(content.name)
+    );
 }
 
 function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
@@ -34,10 +40,14 @@ function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
     return loadPackages(packagesDir, packageToFile).then((packages) => {
         const inspectors = [];
         if (resolvePackagesVersions) {
-            inspectors.push({ inspect: inspectPackagesVersions, resolve: resolvePackagesVersions });
+            inspectors.push({
+                inspect: inspectPackagesVersions, resolve: resolvePackagesVersions,
+            });
         }
         if (resolveModulesVersions) {
-            inspectors.push({ inspect: inspectModulesVersions, resolve: resolveModulesVersions });
+            inspectors.push({
+                inspect: inspectModulesVersions, resolve: resolveModulesVersions,
+            });
         }
         return inspect(inspectors, packages)
             .then(changes => applyChanges(packages, changes))
