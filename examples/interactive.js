@@ -19,7 +19,7 @@ function ask(question) {
 function walk(list, callback) {
     return list.reduce(
         (acc, item) => acc.then(() => callback(item)),
-        Promise.resolve()
+        Promise.resolve(),
     );
 }
 

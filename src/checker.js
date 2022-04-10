@@ -12,9 +12,9 @@ function inspect(inspectors, packages) {
     return inspectors
         .reduce(
             (acc, { inspect, resolve }) => acc.then(() =>
-                inspect(packages, changes, resolve)
+                inspect(packages, changes, resolve),
             ),
-            Promise.resolve()
+            Promise.resolve(),
         )
         .then(() => changes);
 }
@@ -30,7 +30,7 @@ function applyChanges(packages, changes) {
         cache[packageName][section][moduleName] = version;
     });
     return packages.filter(
-        (content) => packageNames.has(content.name)
+        (content) => packageNames.has(content.name),
     );
 }
 
