@@ -3,7 +3,7 @@ const readFile = jest.fn();
 const writeFile = jest.fn();
 
 jest.mock('util', () => ({
-    promisify: x => x,
+    promisify: (x) => x,
 }));
 jest.mock('fs', () => ({
     readdir,

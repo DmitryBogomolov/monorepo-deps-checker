@@ -36,7 +36,7 @@ function loadPackages(dir, packageToFile) {
     const errors = [];
     return getDirItems(dir)
         .then((items) => Promise.all(
-            items.map(item => processPackage(dir, item, packages, map, errors)),
+            items.map((item) => processPackage(dir, item, packages, map, errors)),
         ))
         .then(() => {
             if (errors.length) {
@@ -59,7 +59,7 @@ function savePackage(pack, packageToFile, errors) {
 function savePackages(packages, packageToFile) {
     const errors = [];
     return Promise.all(
-        packages.map(pack => savePackage(pack, packageToFile, errors)),
+        packages.map((pack) => savePackage(pack, packageToFile, errors)),
     ).then(() => {
         if (errors.length) {
             const err = new Error('some packages are not saved');

@@ -50,8 +50,8 @@ function check(repoDir, resolvePackagesVersions, resolveModulesVersions) {
             });
         }
         return inspect(inspectors, packages)
-            .then(changes => applyChanges(packages, changes))
-            .then(changedPackages => savePackages(changedPackages, packageToFile));
+            .then((changes) => applyChanges(packages, changes))
+            .then((changedPackages) => savePackages(changedPackages, packageToFile));
     });
 }
 

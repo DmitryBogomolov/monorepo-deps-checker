@@ -26,6 +26,7 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "^8.13.0",
+    "eslint-config-dmbg-js": "^0.0.1",
     "jest": "^27.5.1"
   }
 }

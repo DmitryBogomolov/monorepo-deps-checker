@@ -22,11 +22,11 @@ function inspectModulesVersions(packages, changes, resolve) {
     const defaultFilter = () => true;
     Object.keys(modulesVersions)
         // Select those with at least two different versions.
-        .filter(moduleName => Object.keys(modulesVersions[moduleName]).length > 1)
+        .filter((moduleName) => Object.keys(modulesVersions[moduleName]).length > 1)
         .forEach((moduleName) => {
             const versions = modulesVersions[moduleName];
             const items = Object.keys(versions)
-                .map(version => ({ version, packages: versions[version] }))
+                .map((version) => ({ version, packages: versions[version] }))
                 .sort((a, b) => b.packages.length - a.packages.length);
             conflicts.push({
                 moduleName,
